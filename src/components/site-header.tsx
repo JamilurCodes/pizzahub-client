@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { ArrowRight, Menu, X } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { ArrowRight, LayoutDashboard, LogOut, Menu, X } from "lucide-react"
 import { Logo } from "@/components/logo"
+import { UserAvatar } from "@/components/user-avatar"
+import { UserMenu } from "@/components/user-menu"
+import { toast } from "@/components/ui/toast"
+import { authClient } from "@/lib/auth.client"
 import { cn } from "@/lib/utils"
 
 const navLinks = [
@@ -20,8 +24,14 @@ function isActive(pathname: string, href: string) {
 
 export function SiteHeader() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { data: session } = authClient.useSession()
+  const user = session?.user
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+
+  const links = user ? navLinks : navLinks.filter((link) => link.href !== "/orders")
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -41,6 +51,16 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [menuOpen])
 
+  const onSignOut = async () => {
+    setSigningOut(true)
+    await authClient.signOut()
+    setSigningOut(false)
+    setMenuOpen(false)
+    toast.add({ type: "success", title: "Signed out", description: "See you at the next slice." })
+    router.push("/")
+    router.refresh()
+  }
+
   return (
     <header
       className={cn(
@@ -58,7 +78,7 @@ export function SiteHeader() {
         </Link>
 
         <nav aria-label="Main navigation" className="hidden flex-1 justify-center gap-8 lg:flex xl:gap-12">
-          {navLinks.map((link) => {
+          {links.map((link) => {
             const active = isActive(pathname, link.href)
 
             return (
@@ -78,20 +98,31 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2 sm:gap-4 lg:gap-6">
-          <Link
-            href="/sign-in"
-            className="hidden rounded-md py-2 text-[0.95rem] font-medium text-ink/75 outline-none transition-colors hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/40 sm:inline-flex"
-          >
-            Sign in
-          </Link>
+          {user ? (
+            <UserMenu
+              name={user.name}
+              email={user.email}
+              image={user.image}
+              role={user.role}
+            />
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="hidden rounded-md py-2 text-[0.95rem] font-medium text-ink/75 outline-none transition-colors hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/40 sm:inline-flex"
+              >
+                Sign in
+              </Link>
 
-          <Link
-            href="/sign-up"
-            className="group hidden h-12 items-center gap-2 rounded-xl bg-brand px-5 text-sm font-semibold text-white shadow-[0_12px_24px_-12px_rgba(198,58,46,0.8)] outline-none transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-[0_16px_30px_-12px_rgba(198,58,46,0.85)] focus-visible:ring-3 focus-visible:ring-ring/40 sm:inline-flex lg:h-[3.4rem] lg:px-6 lg:text-[0.95rem]"
-          >
-            Join PizzaHub
-            <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-          </Link>
+              <Link
+                href="/sign-up"
+                className="group hidden h-12 items-center gap-2 rounded-xl bg-brand px-5 text-sm font-semibold text-white shadow-[0_12px_24px_-12px_rgba(198,58,46,0.8)] outline-none transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-[0_16px_30px_-12px_rgba(198,58,46,0.85)] focus-visible:ring-3 focus-visible:ring-ring/40 sm:inline-flex lg:h-[3.4rem] lg:px-6 lg:text-[0.95rem]"
+              >
+                Join PizzaHub
+                <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </Link>
+            </>
+          )}
 
           <button
             type="button"
@@ -113,7 +144,7 @@ export function SiteHeader() {
         >
           <nav aria-label="Mobile navigation" className="mx-auto max-w-370 px-5 py-4 sm:px-8">
             <ul className="flex flex-col">
-              {navLinks.map((link) => {
+              {links.map((link) => {
                 const active = isActive(pathname, link.href)
 
                 return (
@@ -135,23 +166,54 @@ export function SiteHeader() {
               })}
             </ul>
 
-            <div className="mt-4 flex flex-col gap-2 pb-2">
-              <Link
-                href="/sign-up"
-                onClick={() => setMenuOpen(false)}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
-              >
-                Join PizzaHub
-                <ArrowRight className="size-4" />
-              </Link>
-              <Link
-                href="/sign-in"
-                onClick={() => setMenuOpen(false)}
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-black/10 text-sm font-semibold text-ink transition-colors hover:bg-black/4"
-              >
-                Sign in
-              </Link>
-            </div>
+            {user ? (
+              <div className="mt-4 flex flex-col gap-2 pb-2">
+                <div className="mb-1 flex items-center gap-3 rounded-xl bg-black/[0.03] p-3">
+                  <UserAvatar name={user.name} image={user.image} className="size-10" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-black/10 text-sm font-semibold text-ink transition-colors hover:bg-black/4"
+                >
+                  <LayoutDashboard className="size-4" />
+                  Dashboard
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  disabled={signingOut}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:opacity-60"
+                >
+                  <LogOut className="size-4" />
+                  {signingOut ? "Signing out…" : "Sign out"}
+                </button>
+              </div>
+            ) : (
+              <div className="mt-4 flex flex-col gap-2 pb-2">
+                <Link
+                  href="/sign-up"
+                  onClick={() => setMenuOpen(false)}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
+                >
+                  Join PizzaHub
+                  <ArrowRight className="size-4" />
+                </Link>
+                <Link
+                  href="/sign-in"
+                  onClick={() => setMenuOpen(false)}
+                  className="inline-flex h-12 items-center justify-center rounded-xl border border-black/10 text-sm font-semibold text-ink transition-colors hover:bg-black/4"
+                >
+                  Sign in
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       )}
