@@ -1,3 +1,94 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-orange: var(--brand-orange);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* PizzaHub palette */
+  --cream: #faf6f0;
+  --ink: #171310;
+  --brand: #c63a2e;
+  --brand-dark: #a82e24;
+  --brand-orange: #e07a3f;
+
+  /* Shadcn tokens */
+  --background: #faf6f0;
+  --foreground: #171310;
+  --card: #ffffff;
+  --card-foreground: #171310;
+  --popover: #ffffff;
+  --popover-foreground: #171310;
+  --primary: #c63a2e;
+  --primary-foreground: #fffaf5;
+  --secondary: #f3e9dd;
+  --secondary-foreground: #3a2a21;
+  --muted: #f1e7db;
+  --muted-foreground: #7c6b5f;
+  --accent: #f6e3d7;
+  --accent-foreground: #3a2a21;
+  --destructive: #b3261e;
+  --destructive-foreground: #fffaf5;
+  --border: #e7d9c9;
+  --input: #e0d0bf;
+  --ring: #c63a2e;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--brand);
+    color: #fffaf5;
+  }
+}
