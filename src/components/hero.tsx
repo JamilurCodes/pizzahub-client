@@ -13,7 +13,7 @@ export function Hero() {
         src="/images/hero-pizza.jpg"
         alt="A freshly baked pizza on a dark wooden table"
         fill
-        preload
+        loading="eager"
         sizes="100vw"
         className="object-cover object-center"
       />
