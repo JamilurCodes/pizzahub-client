@@ -60,6 +60,7 @@ src/
   lib/
     auth.ts              # Better Auth server config (server-only)
     auth.client.ts       # createAuthClient + typed hooks
+    api.ts               # bearer-token fetch wrapper for the Express API
     password.ts          # shared password rules
     utils.ts             # cn helper
 ```
@@ -79,8 +80,11 @@ src/
   crafted request cannot self-assign `admin`. Never trust a role from the client without this hook.
 - Google sign-in needs `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`; without them Better Auth logs
   a warning and the button fails at runtime.
-- The Express API will verify the same JWT through the Better Auth JWKS endpoint and then re-read
+- The Express API verifies the same JWT through the Better Auth JWKS endpoint and then re-reads
   the user from MongoDB to enforce `role` and `isBlocked`.
+- The JWT plugin signs tokens for the API; the client mints one with
+  `GET /api/auth/token` (see `src/lib/api.ts`) and sends it as `Authorization: Bearer …`.
+  Issuer and audience both default to `BETTER_AUTH_URL`, so the API must use the same value.
 
 ## UI conventions
 
@@ -91,8 +95,8 @@ src/
 - Feedback uses the Base UI toast manager — `toast.add({ type, title, description })` from
   `@/components/ui/toast`. `alert()` and `console.log` are not acceptable user feedback.
 - `Toaster` is mounted once in `src/app/layout.tsx`; do not add another.
-- Use `next/image` with `preload` (not the deprecated `priority`) for above-the-fold images, and
-  `size-*` utilities instead of `w-* h-*` pairs.
+- Use `next/image` with `loading="eager"` (or `fetchPriority="high"`) for above-the-fold images;
+  the `priority` prop is deprecated in Next.js 16. Use `size-*` utilities instead of `w-* h-*` pairs.
 - The mobile breakpoint for the header is `lg`; keep the mobile menu keyboard accessible (Escape
   closes it) and close it on navigation.
 
